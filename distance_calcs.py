@@ -88,19 +88,32 @@ for header_item in header_list[metric_start:]:
 
         dm_dict[header_item] += '\n'
 
-print('SPAGHETTIQUAN')
-print(dm_dict['SPAGHETTIQUAN'])
+#print/write all metrics in header_list, and print in distance matrix form
+# for header_item in header_list[metric_start:]:
+#     print(dm_dict[header_item])
+
+# print just the values for Excel or R graphs
 
 def print_graph_values(asd_severity_metric):
-    """
-    print just the values for Excel or R graphs
-    """
     print('\n')
     print(asd_severity_metric)
     for key, value in sorted(differences_dict_half.items()):
         print(key + '\t' + str(-(value[asd_severity_metric + '_diff'])))
 
-asd_severity_list = ['Lethargy', 'SPAGHETTIQUAN']
+    metric_value_list = []
+    for key, value in sorted(differences_dict_half.items()):
+        metric_value_per_subject_comparison = str(-(value[asd_severity_metric + '_diff']))
+        print(metric_value_per_subject_comparison)
+        metric_value_list.append(metric_value_per_subject_comparison)
 
-for i in asd_severity_list:
-    print_graph_values(i)
+    return asd_severity_metric, metric_value_list
+
+vectors_for_R_file = open('vectors_for_r_graphs.tsv', 'w')
+
+# print/write all metrics in header_list, but make them in vector form
+for header_item in header_list[metric_start:]:
+    asd_severity_metric, metric_value_list = print_graph_values(header_item)
+    print(metric_value_list)
+    vectors_for_R_file.write(asd_severity_metric + '\t' + str("\t".join(metric_value_list)) + '\n')
+
+vectors_for_R_file.close()
