@@ -2,8 +2,9 @@ rm(list=ls())
 library(vegan)
 library(rio)
 args = commandArgs(trailingOnly=TRUE)
+options(scipen = 999)
 
-setwd('/Volumes/JEN_DATA/autism_project/microbial_analysis/03_mapping/updated_mappings_110917/mapping_asd_dms/otu_relative_abundance')
+# setwd('/Volumes/JEN_DATA/autism_project/microbial_analysis/03_mapping/updated_mappings_110917/mapping_asd_dms/otu_relative_abundance')
 
 diet = c(10.48808848,8.717797887,9.695359715,8.124038405,10.14889157,12.16552506,11.26942767,10.04987562,10.95445115,10.34408043,13.07669683,11.40175425,14.24780685,15.13274595,13.19090596,12.08304597,8.366600265,9.38083152,14.14213562,13.56465997,6.92820323)
 euclidean = c(12.28820573,5.830951895,5.477225575,7.615773106,7.280109889,4.795831523,11.95826074,8.831760866,16.0623784,8.602325267,11.61895004,7,10.44030651,8.366600265,13.7113092,7.745966692,10.72380529,10.63014581,5.196152423,5.385164807,5.477225575)
@@ -15,27 +16,23 @@ data_labels = c("12.1_12.2","14.1_14.2","14.1_14.3","14.2_14.3","22.1_22.2","22.
 subjects = c("6", "7", "12", "14", "22", "24", "27")
 colors = c("firebrick2", "blue3", "darkorchid", "coral", "forestgreen", "yellow2", "deeppink3")
 
-create_graphs = function(otu_file){
+create_graphs = function(severity_metric_file, otu_file){
 
-  test = import(otu_file)
+  severity_metric_file = import(severity_metric_file)
+  otu_abundance_file = import(otu_file)
 
-  lethargy = c(-1,-4,-1,3,-6,-1,0,5,6,1,-2,2,-6,-8,11,0,1,5,1,5,4)
-  hyperactivity = c(7,2,0,-2,-4,2,9,6,13,7,7,1,2,1,5,-4,-1,-4,3,0,-3)
-  stereotypy = c(1,-1,3,4,0,-1,1,-1,1,2,-3,-2,-2,0,1,-2,-2,-2,0,0,0)
-  inapp_speech = c(0,2,4,2,1,1,5,0,4,4,-3,2,1,-1,5,-2,-3,-2,-1,0,1)
+  for (sev in 1:length(severity_metric_file)){
 
-  severity_list = list(lethargy, hyperactivity, stereotypy, inapp_speech)
-  severity_names_list = list("lethargy", "hyperactivity", "stereotypy", "inapp_speech")
+    # value lists for each severity metric
+    p_values = c()
+    asv_list = c()
+    r_list = c()
 
-  p_values = c()
-  asv_list = c()
-  r_list = c()
+    for (num in 1:length(otu_abundance_file)) {
 
-  for (sev in 1:length(severity_list)){
-    for (num in 1:length(test)) {
       correlation_test = ""
-      otu_metric = test[num][[1]]
-      severity_metric_final = severity_list[sev][[1]]
+      otu_metric = otu_abundance_file[num][[1]]
+      severity_metric_final = severity_metric_file[sev][[1]]
       correlation_test = cor.test(otu_metric, severity_metric_final,  method = "pearson", use = "complete.obs")
       p = as.numeric(correlation_test$p.value)
       r = as.numeric(correlation_test$estimate)
@@ -55,18 +52,16 @@ create_graphs = function(otu_file){
       }
 
       p_values = c(p_values, p)
-      asv_list = c(asv_list, toString(names(test[num])))
+      asv_list = c(asv_list, toString(names(otu_abundance_file[num])))
       r_list = c(r_list, r)
 
-      # if (p > 0.01){
-      #   next
-      # }
-      # print(names(test[num]))
-      # print(test[num][[1]])
+      if (p > 0.01){
+        next
+      }
 
-      pdf_name = paste0("severity_pdfs_", round(p, digits=4), '_', round(r, digits=4), '_', severity_names_list[sev], '_', toString(names(test[num])), ".pdf")
+      pdf_name = paste0("severitypdfs_", toString(names(severity_metric_file[sev])), '_', toString(names(otu_abundance_file[num])), round(p, digits=5), '_', round(r, digits=2), '_', ".pdf")
       pdf(pdf_name)
-      plot(otu_metric, severity_metric_final, pch=19, xlab=toString(names(test[num])), ylab=severity_names_list[sev])
+      plot(otu_metric, severity_metric_final, pch=19, xlab=toString(names(otu_abundance_file[num])), ylab=toString(names(severity_metric_file[sev])))
       try(abline(lm(severity_metric_final ~ severity_metric), lwd=3), silent=TRUE)
       for (subject_num in 1:length(subjects)) {
         subject = subjects[subject_num][[1]]
@@ -91,18 +86,14 @@ create_graphs = function(otu_file){
       }
       dev.off()
     }
-    print(toString(r_list))
-    print(toString(p_values))
 
     p_values_adjusted = p.adjust(p_values, method="fdr", n=length(p_values))
 
+    print(toString(r_list))
+    print(toString(p_values))
     print(toString(p_values_adjusted))
     print(toString(asv_list))
   }
-
 }
 
-
-create_graphs(args[1])
-
-
+create_graphs(args[1], args[2])
