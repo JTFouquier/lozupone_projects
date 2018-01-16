@@ -12,12 +12,15 @@ complete_weighted_unifrac_dm = read.table("/Volumes/JEN_DATA/autism_project/micr
 complete_euclidean_diet_dm = read.table("/Volumes/JEN_DATA/autism_project/microbial_analysis/03_mapping/updated_mappings_110917/mapping_asd_dms/euclidean_dm_diet.txt")
 complete_euclidean_severity_dm = read.table("/Volumes/JEN_DATA/autism_project/microbial_analysis/03_mapping/updated_mappings_110917/mapping_asd_dms/euclidean_dm_asd_severity_112817.txt")
 
-diet = c(10.48808848,8.717797887,9.695359715,8.124038405,10.14889157,12.16552506,11.26942767,10.04987562,10.95445115,10.34408043,13.07669683,11.40175425,14.24780685,15.13274595,13.19090596,12.08304597,8.366600265,9.38083152,14.14213562,13.56465997,6.92820323)
-euclidean = c(12.28820573,5.830951895,5.477225575,7.615773106,7.280109889,4.795831523,11.95826074,8.831760866,16.0623784,8.602325267,11.61895004,7,10.44030651,8.366600265,13.7113092,7.745966692,10.72380529,10.63014581,5.196152423,5.385164807,5.477225575)
+# diet = c(10.48808848,8.717797887,9.695359715,8.124038405,10.14889157,12.16552506,11.26942767,10.04987562,10.95445115,10.34408043,13.07669683,11.40175425,14.24780685,15.13274595,13.19090596,12.08304597,8.366600265,9.38083152,14.14213562,13.56465997,6.92820323)
+# euclidean = c(12.28820573,5.830951895,5.477225575,7.615773106,7.280109889,4.795831523,11.95826074,8.831760866,16.0623784,8.602325267,11.61895004,7,10.44030651,8.366600265,13.7113092,7.745966692,10.72380529,10.63014581,5.196152423,5.385164807,5.477225575)
 # error in this euclidean
 # euclidean = c(12.32882801, 5.567764363, 4.242640687, 7.416198487, 7.280109889, 5.099019514, 11.26942767, 8.888194417, 15.68438714, 7.681145748, 11.26942767, 6.782329983, 10.58300524, 8.366600265, 12.80624847, 7.549834435, 10.48808848, 10.86278049, 5.196152423, 5.744562647, 5.477225575)
 weighted_unifrac = c(0.250405399, 0.143320292, 0.221448669, 0.300183276, 0.106750785, 0.28752638, 0.418629095, 0.301022682, 0.398150981, 0.210891019, 0.119843726, 0.099939122, 0.14175059, 0.089918009, 0.32273384, 0.092315999, 0.205174906, 0.191292454, 0.239619462, 0.252440368, 0.243502253)
 unweighted_unifrac = c(0.288880109, 0.237725548, 0.219268979, 0.24665496, 0.264440053, 0.217830322, 0.255787332, 0.29526024, 0.292331925, 0.222636407, 0.213708084, 0.200344608, 0.228781456, 0.23661749, 0.303631262, 0.243386346, 0.300530476, 0.293815011, 0.263668155, 0.329244748, 0.285316192)
+diet = c(10.48808848,8.717797887,9.695359715,8.124038405,10.14889157,12.16552506,11.26942767,10.04987562,10.95445115,10.34408043,13.07669683,11.40175425,14.24780685,15.13274595,13.19090596,12.08304597,8.366600265,9.38083152,14.14213562,13.56465997,6.92820323)
+euclidean = c(12.28820573,5.830951895,5.477225575,7.615773106,7.280109889,4.795831523,11.95826074,8.831760866,16.0623784,8.602325267,11.61895004,7,10.44030651,8.366600265,13.7113092,7.745966692,10.72380529,10.63014581,5.196152423,5.385164807,5.477225575)
+lethargy = c(-1,-4,-1,3,-6,-1,0,5,6,1,-2,2,-6,-8,11,0,1,5,1,5,4)
 
 # print("THIS DOES NOT MAKE SENSE...")
 print(mantel(dm_euclidean, dm_weighted_unifrac, method = "pearson", permutations=999))
@@ -80,7 +83,7 @@ for (i in 1:length(names(test))) {
 # }
 
 # create graphs with vectors for each metric
-severity_metric = diet
+severity_metric = lethargy
 microbial_metric = weighted_unifrac
 pdf_name = paste0("pdf_diet_euclidean_vector_weighted_unifrac.pdf")
 pdf(pdf_name)
@@ -110,9 +113,14 @@ for (subject_num in 1:length(subjects)) {
 }
 dev.off()
 
-severity_metric = diet
+severity_metric = lethargy
 microbial_metric = unweighted_unifrac
 pdf_name = paste0("pdf_diet_euclidean_vector_unweighted_unifrac.pdf")
+
+correlation_test = cor.test(metric1, metric2,  method = "pearson", use = "complete.obs")
+p = as.numeric(correlation_test$p.value)
+r = as.numeric(correlation_test$estimate)
+
 pdf(pdf_name)
 plot(severity_metric, microbial_metric, pch=19, xlab="Diet Euclidean Distance", ylab="Unweighted UniFrac Distance")
 try(abline(lm(microbial_metric ~ severity_metric), lwd=3), silent=TRUE)
@@ -170,56 +178,56 @@ for (subject_num in 1:length(subjects)) {
   try(abline(lm(small_y_vector ~ small_x_vector), col=subject_color, lwd=3), silent=TRUE)
 }
 dev.off()
-
-severity_metric = euclidean
-microbial_metric = unweighted_unifrac
-pdf_name = paste0("pdf_severity_euclidean_vector_unweighted_unifrac.pdf")
-pdf(pdf_name)
-plot(severity_metric, microbial_metric, pch=19, xlab="ASD Severity Euclidean Distance", ylab="Unweighted UniFrac Distance")
-try(abline(lm(microbial_metric ~ severity_metric), lwd=3), silent=TRUE)
-# abline(lm(microbial_metric ~ severity_metric), lwd=3)
-for (subject_num in 1:length(subjects)) {
-  subject = subjects[subject_num][[1]]
-  small_x_vector = numeric()
-  small_y_vector = numeric()
-  data_labels_small = c()
-  subject_color = colors[subject_num][[1]]
-  for (data_num in 1:length(data_labels)){
-    data_label = data_labels[data_num][[1]]
-    if (startsWith(data_label, subject)) {
-      data_labels_small = c(data_labels_small, data_label)
-      
-      severity_values_for_subject = severity_metric[data_num][[1]]
-      small_x_vector = c(small_x_vector, severity_values_for_subject)
-      
-      microbial_values_for_subject = microbial_metric[data_num][[1]]
-      small_y_vector = c(small_y_vector, microbial_values_for_subject)
-    }
-  }
-  text(small_x_vector, small_y_vector, labels=data_labels_small, cex=0.8, pos=3, col=subject_color)
-  try(abline(lm(small_y_vector ~ small_x_vector), col=subject_color, lwd=3), silent=TRUE)
-}
-dev.off()
-
-
-
-correlation_test = mantel(dm_euclidean, dm_weighted_unifrac,  method = "pearson")
-print(correlation_test)
-
+# 
+# severity_metric = euclidean
+# microbial_metric = unweighted_unifrac
+# pdf_name = paste0("pdf_severity_euclidean_vector_unweighted_unifrac.pdf")
+# pdf(pdf_name)
+# plot(severity_metric, microbial_metric, pch=19, xlab="ASD Severity Euclidean Distance", ylab="Unweighted UniFrac Distance")
+# try(abline(lm(microbial_metric ~ severity_metric), lwd=3), silent=TRUE)
+# # abline(lm(microbial_metric ~ severity_metric), lwd=3)
+# for (subject_num in 1:length(subjects)) {
+#   subject = subjects[subject_num][[1]]
+#   small_x_vector = numeric()
+#   small_y_vector = numeric()
+#   data_labels_small = c()
+#   subject_color = colors[subject_num][[1]]
+#   for (data_num in 1:length(data_labels)){
+#     data_label = data_labels[data_num][[1]]
+#     if (startsWith(data_label, subject)) {
+#       data_labels_small = c(data_labels_small, data_label)
+#       
+#       severity_values_for_subject = severity_metric[data_num][[1]]
+#       small_x_vector = c(small_x_vector, severity_values_for_subject)
+#       
+#       microbial_values_for_subject = microbial_metric[data_num][[1]]
+#       small_y_vector = c(small_y_vector, microbial_values_for_subject)
+#     }
+#   }
+#   text(small_x_vector, small_y_vector, labels=data_labels_small, cex=0.8, pos=3, col=subject_color)
+#   try(abline(lm(small_y_vector ~ small_x_vector), col=subject_color, lwd=3), silent=TRUE)
+# }
+# dev.off()
+# 
+# 
+# 
+# correlation_test = mantel(dm_euclidean, dm_weighted_unifrac,  method = "pearson")
+# print(correlation_test)
+# 
 correlation_test = cor.test(euclidean, weighted_unifrac,  method = "pearson", use = "complete.obs")
 print(correlation_test)
-
+# 
 correlation_test = cor.test(euclidean, unweighted_unifrac,  method = "pearson", use = "complete.obs")
 print(correlation_test)
-
-
-correlation_test = cor.test(diet, weighted_unifrac,  method = "pearson", use = "complete.obs")
-print(correlation_test)
-
-correlation_test = cor.test(diet, unweighted_unifrac,  method = "pearson", use = "complete.obs")
-print(correlation_test)
-
-
-print(mantel(complete_weighted_unifrac_dm, complete_euclidean_diet_dm, method = "pearson", permutations=999))
-print(mantel(complete_weighted_unifrac_dm, complete_euclidean_severity_dm, method = "pearson", permutations=999))
-
+# 
+# 
+# correlation_test = cor.test(diet, weighted_unifrac,  method = "pearson", use = "complete.obs")
+# print(correlation_test)
+# 
+# correlation_test = cor.test(diet, unweighted_unifrac,  method = "pearson", use = "complete.obs")
+# print(correlation_test)
+# 
+# 
+# print(mantel(complete_weighted_unifrac_dm, complete_euclidean_diet_dm, method = "pearson", permutations=999))
+# print(mantel(complete_weighted_unifrac_dm, complete_euclidean_severity_dm, method = "pearson", permutations=999))
+# 
