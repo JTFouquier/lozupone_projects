@@ -59,7 +59,7 @@ create_graphs = function(severity_metric_file, otu_file){
         next
       }
 
-      pdf_name = paste0("severitypdfs_", toString(names(severity_metric_file[sev])), '_', toString(names(otu_abundance_file[num])), round(p, digits=5), '_', round(r, digits=2), '_', ".pdf")
+      pdf_name = paste0("severitypdfs_", toString(names(severity_metric_file[sev])), '_', toString(names(otu_abundance_file[num])), '_', round(p, digits=5), '_', round(r, digits=2), ".pdf")
       pdf(pdf_name)
       plot(otu_metric, severity_metric_final, pch=19, xlab=toString(names(otu_abundance_file[num])), ylab=toString(names(severity_metric_file[sev])))
       try(abline(lm(severity_metric_final ~ severity_metric), lwd=3), silent=TRUE)
@@ -88,7 +88,6 @@ create_graphs = function(severity_metric_file, otu_file){
     }
 
     p_values_adjusted = p.adjust(p_values, method="fdr", n=length(p_values))
-
     print(toString(r_list))
     print(toString(p_values))
     print(toString(p_values_adjusted))
